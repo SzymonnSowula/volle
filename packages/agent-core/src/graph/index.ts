@@ -154,12 +154,12 @@ export async function runSession(
       userIntent,
       // If resuming from approval, update the approval status
       pendingApprovals: resumeConfig?.approvalId
-        ? (existing.checkpoint.channel_values.pendingApprovals || []).map((a: ApprovalRequest) =>
+        ? ((existing.checkpoint.channel_values as any).pendingApprovals || []).map((a: ApprovalRequest) =>
             a.id === resumeConfig.approvalId
               ? { ...a, status: resumeConfig.approved ? 'approved' : 'denied' }
               : a
           )
-        : existing.checkpoint.channel_values.pendingApprovals || [],
+        : (existing.checkpoint.channel_values as any).pendingApprovals || [],
       requiresApproval: false,
       lastError: null,
     } as typeof StateAnnotation.State;

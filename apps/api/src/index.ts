@@ -4,7 +4,7 @@ import { agentsRoutes } from './routes/agents';
 import { receiptsRoutes } from './routes/receipts';
 import { voiceRoutes } from './routes/voice';
 import { orchestratorService } from './services/orchestrator';
-import { voiceService } from './services/voice';
+import { voiceProxyService } from './services/voice';
 import { receiptService } from './services/receipt.service';
 import { postgresDb } from './db/postgres';
 import { redisDb } from './db/redis';
@@ -34,7 +34,7 @@ export async function buildApp() {
   await redisDb.initialize();
 
   await fastify.decorate('orchestrator', orchestratorService);
-  await fastify.decorate('voice', voiceService);
+  await fastify.decorate('voice', voiceProxyService);
   await fastify.decorate('receipts', receiptService);
   await fastify.decorate('db', postgresDb);
   await fastify.decorate('redis', redisDb);

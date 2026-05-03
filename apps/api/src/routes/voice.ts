@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { voiceProxyService } from '../services/voice';
 
 export async function voiceRoutes(fastify: FastifyInstance) {
-  fastify.get('/voice/:sessionId', { websocket: true }, (connection, req) => {
+  fastify.get('/voice/:sessionId', { websocket: true }, (connection: any, req) => {
     const { sessionId } = req.params as { sessionId: string };
     const apiKey = process.env.ELEVENLABS_API_KEY || '';
     const agentId = process.env.ELEVENLABS_AGENT_ID || '';

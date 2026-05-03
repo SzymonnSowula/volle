@@ -76,8 +76,13 @@ Respond with only the category name, nothing else.`;
   }
 
   // If this is a resume and no clear new intent, route to the previous agent
-  let targetAgent = classification.toLowerCase() as AgentName;
-  if (isResume && targetAgent === 'general') {
+  let targetAgent: AgentName;
+  if (classification === 'GENERAL') {
+    targetAgent = 'summary' as AgentName;
+  } else {
+    targetAgent = classification.toLowerCase() as AgentName;
+  }
+  if (isResume && classification === 'GENERAL') {
     const lastNonCoordinator = [...agentHistory]
       .reverse()
       .find((e) => e.agentName !== 'coordinator' && e.agentName !== 'summary');

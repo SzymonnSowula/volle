@@ -1,4 +1,4 @@
-import { BlockchainReceiptService, hashData } from '@solli/blockchain';
+import { BlockchainReceiptService } from '@solli/blockchain';
 
 export class ReceiptService {
   private blockchainService: BlockchainReceiptService;

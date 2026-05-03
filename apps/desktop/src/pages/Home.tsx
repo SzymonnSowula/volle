@@ -14,9 +14,7 @@ function Home() {
     try {
       const response = await api.createSessionWithInput(input.trim());
       const { sessionId } = response;
-
       await api.runSession(sessionId);
-
       navigate(`/session/${sessionId}`);
     } catch (error) {
       console.error('Failed to start session:', error);
@@ -30,44 +28,74 @@ function Home() {
     'Find me 3 AI internship opportunities in Poland',
     'Research remote React developer jobs',
     'Find top AI conferences in Europe 2025',
+    'Check my unread emails from today',
+    'Schedule a meeting with the team tomorrow at 2pm',
   ];
 
   return (
     <div className="home">
-      <h1>What would you like to research?</h1>
-      <p className="home-subtitle">
-        Ask anything and let AI agents handle the research for you.
-      </p>
+      <div className="home-hero">
+        <div className="home-badge">
+          <span className="home-badge-dot" />
+          Voice-Native Session Operator
+        </div>
 
-      <div className="home-input-wrap">
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="e.g. Find me AI internships in Poland..."
-          rows={3}
-          className="home-textarea"
-        />
-        <button
-          className="start-button"
-          onClick={handleStartSession}
-          disabled={loading || !input.trim()}
-        >
-          {loading ? 'Starting...' : 'Start Session'}
-        </button>
-      </div>
+        <h1>What would you like<br />to accomplish?</h1>
+        <p className="home-subtitle">
+          Start a session and let Solli research, organize, and execute — all through natural conversation.
+        </p>
 
-      <div className="home-samples">
-        <p className="home-samples-title">Try one of these:</p>
-        <div className="home-samples-list">
-          {sampleQueries.map((q) => (
+        <div className="home-input-container">
+          <div className="home-input-glow" />
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="e.g., Find me AI internships in Poland..."
+            rows={3}
+            className="home-textarea"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                handleStartSession();
+              }
+            }}
+          />
+          <div className="home-input-actions">
+            <div className="home-samples">
+              {sampleQueries.slice(0, 3).map((q) => (
+                <button key={q} onClick={() => setInput(q)} className="sample-chip">
+                  {q}
+                </button>
+              ))}
+            </div>
             <button
-              key={q}
-              onClick={() => setInput(q)}
-              className="sample-chip"
+              className="btn btn-primary"
+              onClick={handleStartSession}
+              disabled={loading || !input.trim()}
             >
-              {q}
+              {loading ? (
+                <>
+                  <span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⟳</span>
+                  Starting...
+                </>
+              ) : (
+                <>
+                  Start Session →
+                </>
+              )}
             </button>
-          ))}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '2rem', marginTop: '3rem', color: 'var(--color-text-dim)', fontSize: '0.8125rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '1rem' }}>🔍</span> Research
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '1rem' }}>📧</span> Inbox
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '1rem' }}>📅</span> Planning
+          </div>
         </div>
       </div>
     </div>

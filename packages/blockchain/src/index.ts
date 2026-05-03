@@ -1,4 +1,4 @@
-export { BlockchainReceiptService, createExecutionReceipt, hashData, verifyReceipt } from './receipts';
+export { BlockchainReceiptService, hashData, verifyReceipt } from './receipts';
 export * from './payments';
 
 export const BLOCKCHAIN_NETWORK = process.env.SOLANA_NETWORK || 'devnet';

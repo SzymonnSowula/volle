@@ -80,7 +80,7 @@ If information is missing, include null for that field. Respond with JSON only.`
         taskId: `inbox_${Date.now()}`,
         message: `I need more info to ${extractedAction.action} an email. Recipient: ${extractedAction.to || 'missing'}, Subject: ${extractedAction.subject || 'missing'}. Please provide the missing details.`,
         toolName: `gmail_${extractedAction.action}`,
-        args: extractedAction,
+        args: extractedAction as unknown as Record<string, unknown>,
         createdAt: new Date(),
         status: 'pending',
       });
@@ -115,9 +115,9 @@ If information is missing, include null for that field. Respond with JSON only.`
       agentName: 'inbox',
       taskId: `inbox_${Date.now()}`,
       message: `Approve ${extractedAction.action} email to ${extractedAction.to} with subject "${extractedAction.subject}"?`,
-      toolName: `gmail_${extractedAction.action}`,
-      args: extractedAction,
-      createdAt: new Date(),
+        toolName: `gmail_${extractedAction.action}`,
+        args: extractedAction as unknown as Record<string, unknown>,
+        createdAt: new Date(),
       status: 'pending',
     });
 
@@ -178,7 +178,7 @@ If information is missing, include null for that field. Respond with JSON only.`
       throw new Error(`Gmail worker error: ${response.status} ${response.statusText}`);
     }
 
-    const result = await response.json();
+    const result = await response.json() as { data?: unknown; success?: boolean };
     console.log('[Inbox] Gmail result:', JSON.stringify(result, null, 2));
 
     toolResults.set('inbox_' + Date.now(), {

@@ -1,5 +1,3 @@
-
-
 interface TimelineEvent {
   id: string;
   agentName: string;
@@ -15,38 +13,29 @@ interface AgentTimelineProps {
 function AgentTimeline({ events }: AgentTimelineProps) {
   const getEventIcon = (eventType: string): string => {
     switch (eventType) {
-      case 'started':
-        return '▶';
-      case 'thinking':
-        return '💭';
-      case 'tool_call':
-        return '🔧';
-      case 'tool_result':
-        return '✓';
-      case 'completed':
-        return '✓';
-      case 'failed':
-        return '✗';
-      case 'requires_approval':
-        return '⚠';
-      default:
-        return '●';
+      case 'started': return '▶';
+      case 'thinking': return '◉';
+      case 'tool_call': return '🔧';
+      case 'tool_result': return '✓';
+      case 'completed': return '✓';
+      case 'failed': return '✕';
+      case 'approval_required': return '◉';
+      case 'message': return '◉';
+      default: return '●';
     }
   }
 
   const getEventClass = (eventType: string): string => {
     switch (eventType) {
-      case 'started':
-      case 'tool_result':
-      case 'completed':
-        return 'completed';
-      case 'thinking':
-        return 'thinking';
-      case 'failed':
-      case 'requires_approval':
-        return 'error';
-      default:
-        return 'started';
+      case 'started': return 'started';
+      case 'thinking': return 'thinking';
+      case 'tool_call': return 'tool_call';
+      case 'tool_result': return 'tool_result';
+      case 'completed': return 'completed';
+      case 'failed': return 'failed';
+      case 'approval_required': return 'approval_required';
+      case 'message': return 'message';
+      default: return 'started';
     }
   }
 
@@ -64,16 +53,12 @@ function AgentTimeline({ events }: AgentTimelineProps) {
 
   if (events.length === 0) {
     return (
-      <div
-        style={{
-          padding: '2rem',
-          textAlign: 'center',
-          color: '#a1a1a1',
-          background: '#1a1a1a',
-          borderRadius: '0.75rem',
-          border: '1px solid #333',
-        }}
-      >
+      <div className="glass-card" style={{
+        padding: '2rem',
+        textAlign: 'center',
+        color: 'var(--color-text-muted)',
+      }}>
+        <div style={{ fontSize: '2rem', marginBottom: '0.5rem', opacity: 0.5 }}>◉</div>
         Waiting for agent activity...
       </div>
     );
@@ -82,7 +67,10 @@ function AgentTimeline({ events }: AgentTimelineProps) {
   return (
     <div className="timeline-events">
       {events.map((event) => (
-        <div key={event.id} className="timeline-event">
+        <div
+          key={event.id}
+          className={`timeline-event ${event.agentName === 'user' ? 'user' : ''}`}
+        >
           <div
             className={`timeline-event-icon ${getEventClass(event.eventType)}`}
             title={event.eventType}

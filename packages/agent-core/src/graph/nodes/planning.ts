@@ -84,7 +84,7 @@ Use current date/time if not specified. Respond with JSON only.`;
       taskId: `planning_${Date.now()}`,
       message: `Approve ${actionDesc}?`,
       toolName: `calendar_${extractedAction.action}`,
-      args: extractedAction,
+        args: extractedAction as unknown as Record<string, unknown>,
       createdAt: new Date(),
       status: 'pending',
     });
@@ -147,7 +147,7 @@ Use current date/time if not specified. Respond with JSON only.`;
       throw new Error(`Calendar worker error: ${response.status} ${response.statusText}`);
     }
 
-    const result = await response.json();
+    const result = await response.json() as { data?: unknown; success?: boolean };
     console.log('[Planning] Calendar result:', JSON.stringify(result, null, 2));
 
     toolResults.set('planning_' + Date.now(), {

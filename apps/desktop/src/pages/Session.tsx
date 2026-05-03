@@ -93,7 +93,6 @@ function Session() {
     try {
       await api.sendMessage(id!, followUp.trim());
       setFollowUp('');
-      // Optimistically add user message to timeline
       setEvents((prev) => [
         ...prev,
         {
@@ -139,13 +138,14 @@ function Session() {
           <p className="session-header-input">{session?.input}</p>
         </div>
         <div className="session-header-actions">
-          <span className={`status-indicator ${isRunning ? 'running' : isCompleted ? 'completed' : ''}`}>
-            {isRunning ? '● Running' : isCompleted ? '✓ Completed' : session?.status}
+          <span className={`status-pill ${isRunning ? 'running' : isCompleted ? 'completed' : ''}`}>
+            <span className="status-pill-dot" />
+            {isRunning ? 'Running' : isCompleted ? 'Completed' : session?.status}
           </span>
-          <button className="back-button" onClick={handleEndSession}>
-            End Session
+          <button className="btn btn-ghost" onClick={handleEndSession}>
+            End
           </button>
-          <button className="back-button" onClick={() => navigate('/')}>
+          <button className="btn btn-ghost" onClick={() => navigate('/')}>
             Back
           </button>
         </div>
@@ -157,50 +157,36 @@ function Session() {
         </div>
 
         <div className="agent-timeline">
-          <h3 className="timeline-title">Agent Activity</h3>
+          <div className="timeline-title">Agent Activity</div>
           <AgentTimeline events={events} />
           <div ref={eventsEndRef} />
         </div>
 
-        {/* Follow-up input */}
         {!isCompleted && (
-          <div className="follow-up-input" style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
+          <div className="follow-up-container">
             <input
               type="text"
               value={followUp}
               onChange={(e) => setFollowUp(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSendFollowUp()}
-              placeholder="Type a follow-up message..."
+              placeholder="Type a follow-up or ask a question..."
               disabled={sending}
-              style={{
-                flex: 1,
-                padding: '0.75rem',
-                borderRadius: '0.5rem',
-                border: '1px solid #333',
-                background: '#1a1a1a',
-                color: '#e1e1e1',
-              }}
+              className="follow-up-input"
             />
             <button
+              className="btn btn-primary"
               onClick={handleSendFollowUp}
               disabled={sending || !followUp.trim()}
-              style={{
-                padding: '0.75rem 1.5rem',
-                borderRadius: '0.5rem',
-                border: 'none',
-                background: '#6366f1',
-                color: '#fff',
-                cursor: 'pointer',
-              }}
+              style={{ padding: '0.5rem 1.25rem' }}
             >
-              {sending ? 'Sending...' : 'Send'}
+              {sending ? '...' : '→'}
             </button>
           </div>
         )}
 
         {researchResults.length > 0 && (
           <div className="research-results">
-            <h3 className="timeline-title">Research Results</h3>
+            <div className="timeline-title">Results</div>
             <div className="results-list">
               {researchResults.map((result, index) => (
                 <div key={index} className="result-card">
@@ -209,27 +195,14 @@ function Session() {
                     <span className="result-number">#{index + 1}</span>
                   </div>
                   <div className="result-tags">
-                    {result.organization && (
-                      <span className="result-tag">{result.organization}</span>
-                    )}
-                    {result.location && (
-                      <span className="result-tag">{result.location}</span>
-                    )}
+                    {result.organization && <span className="result-tag">{result.organization}</span>}
+                    {result.location && <span className="result-tag">{result.location}</span>}
                   </div>
-                  {result.reason && (
-                    <p className="result-reason">{result.reason}</p>
-                  )}
-                  {result.snippet && !result.reason && (
-                    <p className="result-snippet">{result.snippet}</p>
-                  )}
+                  {result.reason && <p className="result-reason">{result.reason}</p>}
+                  {result.snippet && !result.reason && <p className="result-snippet">{result.snippet}</p>}
                   {result.url && (
-                    <a
-                      href={result.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="result-link"
-                    >
-                      View source
+                    <a href={result.url} target="_blank" rel="noopener noreferrer" className="result-link">
+                      View source →
                     </a>
                   )}
                 </div>
