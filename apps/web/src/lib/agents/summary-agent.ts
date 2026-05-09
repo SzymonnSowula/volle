@@ -1,5 +1,8 @@
 import type { SessionStore } from '@/lib/db/session-store';
 import type { ResearchResult } from './research-agent';
+import type { InboxResult } from './inbox-agent';
+import type { PlanningResult } from './planning-agent';
+import type { ApplicationResult } from './application-agent';
 import { getToolCost, formatCost } from '@/lib/x402';
 import { logger } from '@/lib/utils/logger';
 
@@ -39,7 +42,10 @@ export async function summaryAgent(
   sessionId: string,
   userIntent: string,
   researchResults: ResearchResult[],
-  store: SessionStore
+  store: SessionStore,
+  inboxResults?: InboxResult,
+  planningResults?: PlanningResult,
+  applicationResults?: ApplicationResult
 ): Promise<string> {
   await store.addEvent({
     sessionId,
@@ -55,12 +61,26 @@ export async function summaryAgent(
       .map((r, i) => `${i + 1}. ${r.title} (${r.organization || 'Unknown'}, ${r.location || 'N/A'})`)
       .join('\n');
 
+    const inboxText = inboxResults
+      ? `Inbox actions: ${inboxResults.actionsTaken.join(', ')}. Emails processed: ${inboxResults.emailsProcessed.length}.`
+      : '';
+
+    const planningText = planningResults
+      ? `Calendar actions: ${planningResults.actionsTaken.join(', ')}. Events created: ${planningResults.eventsCreated.length}.`
+      : '';
+
+    const applicationText = applicationResults
+      ? `Application docs: ${applicationResults.documents.map((d) => d.title).join(', ')}.`
+      : '';
+
     const prompt = `Generate a concise 2-4 sentence summary of the session.
 
 User request: "${userIntent}"
 
-Results found:
-${resultsText || 'No results'}
+${resultsText ? `Research results:\n${resultsText}\n` : ''}
+${inboxText ? `${inboxText}\n` : ''}
+${planningText ? `${planningText}\n` : ''}
+${applicationText ? `${applicationText}\n` : ''}
 
 Summary:`;
 
@@ -68,7 +88,12 @@ Summary:`;
     log.info('Generated summary', summary);
   } catch (error) {
     log.error('Summary generation failed', error);
-    summary = `Session completed. Request: "${userIntent}". Results found: ${researchResults.length}.`;
+    const parts: string[] = [];
+    if (researchResults.length) parts.push(`Research: ${researchResults.length} results`);
+    if (inboxResults) parts.push(`Inbox: ${inboxResults.emailsProcessed.length} emails`);
+    if (planningResults) parts.push(`Planning: ${planningResults.eventsCreated.length} events`);
+    if (applicationResults) parts.push(`Application: ${applicationResults.documents.length} docs generated`);
+    summary = `Session completed. Request: "${userIntent}". ${parts.join('. ') || 'No specialized actions taken.'}`;
   }
 
   await store.addEvent({

@@ -14,6 +14,7 @@
 - **Baza danych**: PostgreSQL + pgvector (via Docker)
 - **Cache / PubSub**: Redis (via Docker)
 - **Workers**: Playwright browser worker + Google APIs worker
+- **Produkt**: Voice-Native Process Operator — nie "ChatGPT z voice", tylko agent prowadzący usera przez cały workflow głosem
 
 ### Aplikacja Webowa (`apps/web/`)
 
@@ -160,19 +161,21 @@ cd /home/szymon/solli && pnpm dev
 
 ### MVP Blockers (muszą być gotowe na demo)
 
-- [x] **Sharp use case** — Voice-Native Onchain Research Agent (nie generyczny AI)
+- [x] **Sharp use case** — Voice-Native Process Operator: user mówi "pomóż mi aplikować", agent dopytuje, wykonuje kroki, zamyka temat
 - [x] **Realna integracja ElevenLabs** — WebSocket + MediaRecorder działa, voice jest primary interface
 - [x] **On-chain transaction** — program Anchor + frontend podpisuje i wysyła realną tx na Solana
 - [x] **On-chain Session PDA** — każda sesja to onchain account z cost tracking
 - [x] **On-chain Receipt PDA** — hash wyników jako proof-of-action onchain
 - [x] **Agent Treasury PDA** — user wpłaca SOL, agent ma budżet na tool calls
 - [x] **x402 stub** — symulowane koszty tool calls, payment headers
+- [x] **x402 w tool calls** — realne payment headers w HTTP do worker-browser
+- [x] **Cost tracking (DB)** — `estimated_cost_sol`, `actual_cost_sol`, `tasks.cost_sol`
+- [x] **Cost Breakdown UI** — panel kosztów na stronie sesji
+- [x] **Demo Simulation jako rozmowa** — transkrypcja dialogu user-agent z tool calls i kosztami
+- [x] **Landing page** — "Talk through your work" zamiast "What do you want to accomplish"
 - [x] **SSE live updates** — timeline aktualizuje się na żywo
 - [x] **Onboarding** — 4-krokowy modal dla nowych użytkowników
 - [x] **Hydration fix** — ClientOnly wrapper dla wallet components
-- [x] **Demo Simulation** — przycisk "Try Demo" pokazujący jak agent działa z kosztami
-- [x] **x402 w tool calls** — realne payment headers w HTTP do worker-browser
-- [x] **Cost Breakdown UI** — panel kosztów na stronie sesji
 - [x] **Devnet deploy scripts** — gotowe skrypty do deployu na devnet
 - [ ] **Worker-browser** — przetestować czy Playwright scrape działa (może wymagać mock)
 - [ ] **Deploy programu** — zdeployować program Anchor na devnet (wymaga terminala + funduszy)

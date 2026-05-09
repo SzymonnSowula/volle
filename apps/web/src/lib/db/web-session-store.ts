@@ -16,6 +16,7 @@ export class WebSessionStore implements SessionStore {
       estimatedCostSol?: number;
       actualCostSol?: number;
       researchResults?: unknown[];
+      metadata?: Record<string, unknown>;
     }
   ): Promise<void> {
     log.debug('updateSession', { sessionId, updates });
@@ -25,6 +26,7 @@ export class WebSessionStore implements SessionStore {
       summary: updates.summary,
       estimatedCostSol: updates.estimatedCostSol,
       actualCostSol: updates.actualCostSol,
+      metadata: updates.metadata,
     });
   }
 

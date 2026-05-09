@@ -152,7 +152,27 @@ export async function createOnchainReceipt(
   return { tx, sessionPDA, receiptPDA };
 }
 
-// --- x402 Stub ---
+// --- x402 Payment ---
+
+export async function recordSessionCost(
+  program: Program,
+  owner: PublicKey,
+  sessionId: number,
+  costSol: number
+) {
+  const [treasuryPDA] = findTreasuryPDA(owner);
+  const lamports = new BN(costSol * LAMPORTS_PER_SOL);
+
+  const tx = await program.methods
+    .recordSessionCost(lamports, new BN(sessionId))
+    .accounts({
+      owner,
+      treasury: treasuryPDA,
+    })
+    .rpc();
+
+  return { tx, treasuryPDA };
+}
 
 export function createX402Headers(amountSol: number, recipient: string): Record<string, string> {
   return {

@@ -10,21 +10,21 @@ export function WalletConnectButton() {
 
   return (
     <ClientOnly fallback={
-      <button className="rounded-lg bg-cream-100 px-4 py-2 text-sm font-medium text-ink-400 border border-cream-300">
+      <button className="rounded-lg bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-600 border border-neutral-200">
         Connect Wallet
       </button>
     }>
       <div className="flex items-center gap-3">
         {connected && publicKey && (
-          <div className="hidden sm:flex items-center gap-2 rounded-full bg-cream-100 border border-cream-300 px-3 py-1.5">
-            <Wallet className="h-3.5 w-3.5 text-teal-600" />
-            <span className="text-xs font-medium text-ink-500">
+          <div className="hidden sm:flex items-center gap-2 rounded-full bg-neutral-100 border border-neutral-200 px-3 py-1.5">
+            <Wallet className="h-3.5 w-3.5 text-neutral-600" />
+            <span className="text-xs font-medium text-neutral-700">
               {publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}
             </span>
           </div>
         )}
         <WalletMultiButton 
-          className="!bg-ink-800 !text-white !rounded-lg !px-4 !py-2 !text-sm !font-medium !border-0 hover:!bg-ink-700 transition-colors !h-auto" 
+          className="!bg-black !text-white !rounded-lg !px-4 !py-2 !text-sm !font-medium !border-0 hover:!bg-neutral-800 transition-colors !h-auto" 
         />
       </div>
     </ClientOnly>

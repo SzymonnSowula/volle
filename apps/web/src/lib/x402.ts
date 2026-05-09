@@ -39,6 +39,7 @@ export const TOOL_COSTS: Record<string, number> = {
   'calendar_create': 0.002,
   'summary_generate': 0.0005,
   'coordinator_classify': 0.0003,
+  'application_generate': 0.002,
 };
 
 export function getToolCost(toolName: string): number {

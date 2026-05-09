@@ -25,6 +25,7 @@ export interface SessionStore {
     estimatedCostSol?: number;
     actualCostSol?: number;
     researchResults?: unknown[];
+    metadata?: Record<string, unknown>;
   }): Promise<void>;
   addEvent(event: SessionStoreEvent): Promise<void>;
   addTask(task: SessionStoreTask): Promise<void>;

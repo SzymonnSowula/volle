@@ -20,7 +20,8 @@ export async function GET(_request: Request, { params }: { params: { id: string 
       const redis = getRedis();
       const channel = `session:${id}:events`;
 
-      const handler = (message: string) => {
+      const messageHandler = (receivedChannel: string, message: string) => {
+        if (receivedChannel !== channel) return;
         try {
           const parsed = JSON.parse(message);
           send(parsed);
@@ -29,17 +30,15 @@ export async function GET(_request: Request, { params }: { params: { id: string 
         }
       };
 
-      redis.subscribe(channel, (err) => {
-        if (err) {
-          send({ type: 'error', message: 'Failed to subscribe to events' });
-        }
+      // Subscribe and attach listener
+      redis.subscribe(channel).then(() => {
+        send({ type: 'subscribed', channel });
+      }).catch((err: Error) => {
+        send({ type: 'error', message: 'Failed to subscribe to events' });
+        console.error('[SSE] Redis subscribe error:', err);
       });
 
-      redis.on('message', (receivedChannel, message) => {
-        if (receivedChannel === channel) {
-          handler(message);
-        }
-      });
+      redis.on('message', messageHandler);
 
       // Keep alive ping every 15s
       const interval = setInterval(() => {
@@ -49,6 +48,7 @@ export async function GET(_request: Request, { params }: { params: { id: string 
       // Clean up on close
       const cleanup = () => {
         clearInterval(interval);
+        redis.removeListener('message', messageHandler);
         redis.unsubscribe(channel).catch(() => {});
       };
 

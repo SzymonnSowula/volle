@@ -1,56 +1,82 @@
 # Solli — Product Plan
 
-> Voice-Native Onchain Research Agent
+> Voice-Native Onchain Process Operator
 > Hackathon: Colosseum (Open Track + ElevenLabs)
 
 ---
 
 ## 1. Sharp Use Case
 
-**Problem:** People research things online every day — jobs, investments, travel plans — but there is no proof-of-action. No audit trail of what the AI recommended. No way to prove that research was done by a trusted agent and approved by the user.
+**Problem:** AI assistants answer questions, but they don't *do* the work. ChatGPT can write a cover letter, but it won't send it. Claude can research a company, but it won't apply for you. There is no voice-native system that guides you through a complete workflow — asking questions, executing steps, and closing the loop.
 
-**Target User:** Crypto-native knowledge workers who want verifiable AI research.
+**Target User:** Crypto-native knowledge workers who want an operator, not a chatbot.
 
-**Solution:** Solli is a voice-native operator that:
-1. Takes a voice query (ElevenLabs)
-2. Executes research (browser agent)
-3. Stores the session onchain (Solana PDA)
-4. Allows the user to approve the result onchain (wallet sign)
-5. Writes a receipt with a hash of results as proof-of-action (Solana memo)
+**Solution:** Solli is a voice-native process operator. You speak naturally, and Solli:
+1. **Asks clarifying questions** (ElevenLabs voice conversation)
+2. **Picks the right agent** (coordinator → research / inbox / planning)
+3. **Executes tool calls** (browser search, email draft, calendar create)
+4. **Asks for approval** before irreversible actions
+5. **Closes the loop** with a summary + on-chain receipt
 
-**The magic moment:** User speaks a query, hears natural voice response, sees real results, clicks one button to make it permanent on Solana.
+**The magic moment:**
+> *User:* "Help me apply to AI internships."
+> *Solli:* "What kind of roles? ML, research, or data science?"
+> *User:* "ML."
+> *Solli:* "Remote or on-site?"
+> *User:* "Warsaw or remote."
+> *Solli:* *(searches, finds 3 openings)* "I found XYZ Labs, TechCorp, and Global Analytics. Which two?"
+> *User:* "First two."
+> *Solli:* *(generates CV + cover letter)* "Ready to send?"
+> *User:* "Yes."
+> *Solli:* *(sends emails)* "Done. Receipt saved on-chain. Good luck!"
+
+This is **not** "ChatGPT with voice." This is a **voice operator** that runs multi-step workflows with human-in-the-loop approval.
 
 ---
 
 ## 2. Core User Flow
 
-### Flow A: Voice Research + Onchain Receipt
+### Flow A: Voice Job Application (Primary Demo)
 
-1. **User opens Solli** → sees clean landing with mic button
-2. **User speaks:** "Find me 3 AI internships in Poland"
-3. **ElevenLabs voice responds:** "I'm on it. Searching for AI internships in Poland."
-4. **Backend:**
-   - Creates Solana PDA session (query, intent, status="pending")
-   - Classifies intent → RESEARCH
-   - Runs browser search
-   - Returns structured results
-5. **Voice continues:** "I found 3 opportunities. First: AI Research Intern at XYZ Labs in Warsaw..."
-6. **UI shows:** Timeline, 3 research cards, summary
-7. **User says or clicks:** "Save this as a receipt"
-8. **Backend computes hash** of results + summary + timestamp
-9. **Phantom wallet pops up** → user signs transaction
-10. **Solana stores:** Receipt memo with hash
-11. **UI shows:** "Receipt saved onchain. View on Solscan."
+1. **User opens Solli** → sees landing with "Talk through your work"
+2. **User speaks:** "Help me apply to AI internships in Warsaw"
+3. **Coordinator agent** (ElevenLabs voice):
+   - "Sure! What kind of roles? ML, research, or data science?"
+4. **User speaks:** "ML and research"
+5. **Coordinator:** "Remote, hybrid, or on-site in Warsaw?"
+6. **User speaks:** "Warsaw or remote is fine"
+7. **Research agent** runs browser search (x402 micropayment deducted)
+8. **Coordinator voice:** "I found 5 matches. Top three: XYZ Labs, TechCorp Poland, Global Analytics. Which ones?"
+9. **User speaks:** "First two"
+10. **Inbox agent** generates tailored CV + cover letter (x402 micropayment)
+11. **Coordinator:** "Drafts ready. For XYZ Labs I highlighted your Rust experience. Want to review?"
+12. **User speaks:** "In the TechCorp one add that I know PyTorch"
+13. **Inbox agent** updates draft
+14. **Coordinator:** "Updated. Sending both applications now..."
+15. **Inbox agent** sends emails (x402 micropayment)
+16. **Summary agent** wraps up: "Applied to 2 internships. Spent 0.0045 SOL. Save receipt on-chain?"
+17. **User speaks:** "Yes"
+18. **Phantom wallet pops up** → user signs → Receipt PDA created on Solana
+19. **UI shows:** Conversation transcript, results, cost breakdown, on-chain receipt hash
 
-### Flow B: Browse + Approve Session
+### Flow B: Inbox Management
 
-1. **User opens Solli**
-2. **User types:** "Research Solana DeFi yields for next week"
-3. **Session created onchain** (PDA with query, status="pending")
-4. **Research runs** → results in UI
-5. **User clicks "Approve onchain"**
-6. **Wallet signs** → status PDA changes to "approved"
-7. **Receipt created** → hash of results stored onchain
+1. **User speaks:** "Sort my unread emails and draft replies"
+2. **Coordinator:** "How many unread? Should I focus on work or everything?"
+3. **User speaks:** "Work emails only, the last 20"
+4. **Inbox agent** reads Gmail, sorts by priority, drafts replies
+5. **Coordinator:** "I drafted 3 replies. The most urgent is from your manager about the deadline. Want me to send it?"
+6. **User speaks:** "Send the manager one, show me the other two"
+7. **UI shows:** Draft previews with send/approve buttons
+8. **User approves** → emails sent → receipt saved on-chain
+
+### Flow C: Research + On-chain Receipt
+
+1. **User types:** "Research Solana DeFi yields for next week"
+2. **Research agent** runs browser search
+3. **Coordinator voice:** "I analyzed 3 protocols. Marinade at 6.8%, JitoSOL at 7.2%, Solend at 8.1%. Save as receipt?"
+4. **User clicks:** "Save receipt on-chain"
+5. **Wallet signs** → Receipt PDA with hash of results stored on Solana
 
 ---
 
@@ -59,18 +85,22 @@
 | Feature | Onchain | Why |
 |---------|---------|-----|
 | Session PDA | ✅ | Every session is an onchain account with query, intent, status, owner |
+| Agent Treasury PDA | ✅ | User deposits SOL; agent has a budget for tool calls |
+| x402 micropayments | ✅ | Each tool call deducts a micropayment from treasury |
 | Status transitions | ✅ | Only wallet owner can approve/confirm status |
-| Receipt memo | ✅ | SHA-256 hash of results stored as onchain proof |
+| Receipt PDA | ✅ | SHA-256 hash + cost stored as onchain proof-of-work |
 | Session registry | ✅ | All user sessions queryable onchain |
-| Budget/approval | 🟡 | Future: agent budgets for paid tools |
 
 **Session PDA structure:**
 ```
 Session {
   owner: Pubkey,
+  session_id: u64,
   query: String<200>,
   intent: String<20>,
-  status: String<20>, // pending, researching, completed, approved
+  status: String<20>,
+  estimated_cost: u64,
+  actual_cost: u64,
   created_at: i64,
   updated_at: i64,
   bump: u8,
@@ -82,8 +112,20 @@ Session {
 Receipt {
   session: Pubkey,
   hash: String<64>,
-  signature: String<88>,
+  cost: u64,
   timestamp: i64,
+  bump: u8,
+}
+```
+
+**Agent Treasury PDA structure:**
+```
+AgentTreasury {
+  owner: Pubkey,
+  balance: u64,
+  total_deposited: u64,
+  total_spent: u64,
+  session_count: u64,
   bump: u8,
 }
 ```
@@ -94,16 +136,26 @@ Receipt {
 
 ElevenLabs is NOT a side feature. It is the PRIMARY way to interact with Solli.
 
+Unlike "ChatGPT with voice," Solli uses ElevenLabs as a **process orchestrator**:
+
 | Feature | Implementation |
 |---------|---------------|
-| Voice query | User holds mic button, speaks query |
-| Voice response | Agent speaks results naturally |
-| Tool execution | Agent calls browser search as tool |
-| Transcript | Shown in UI in real-time |
-| Personality | "Solli, your onchain research operator" |
+| Voice conversation | Natural back-and-forth with clarifying questions |
+| Subagent transfers | Coordinator transfers to research / inbox / planning agents |
+| Tool calls | Agent triggers browser search, email send, calendar create |
+| Human-in-the-loop | Agent asks for approval before irreversible actions |
+| Transcript | Full conversation shown as chat bubbles in real-time |
+| Personality | "Solli, your voice process operator" |
 
-**Agent System Prompt:**
-"You are Solli, a voice-native onchain research operator. You help users research topics and save results as verifiable onchain receipts. You speak clearly, concisely, and naturally. When asked to research, confirm the request, execute the search, and summarize results verbally."
+**Architecture:**
+- **Coordinator Agent** (ElevenLabs primary) — understands intent, asks clarifying questions, routes to subagents
+- **Research Agent** — executes browser search, returns results to coordinator
+- **Inbox Agent** — drafts/sends emails, returns drafts for approval
+- **Planning Agent** — reads/creates calendar events
+- **Summary Agent** — wraps up session, presents cost + receipt option
+
+**Why this is better than one big agent:**
+Each agent has a focused system prompt and tool set. ElevenLabs workflows support routing between conversational stages. This is more stable than a single massive prompt trying to do everything.
 
 ---
 
@@ -137,17 +189,20 @@ ElevenLabs is NOT a side feature. It is the PRIMARY way to interact with Solli.
 ## 7. MVP Scope for Demo
 
 **Must have (demo-ready):**
-- [x] Landing page with voice input
-- [x] Session creation + research flow
-- [x] ElevenLabs voice conversation
+- [x] Landing page: "Talk through your work. Solli handles the rest."
+- [x] Voice conversation with clarifying questions (ElevenLabs WebSocket)
+- [x] Multi-agent orchestration (coordinator → research → inbox → summary)
+- [x] Session creation + research flow with x402 cost tracking
 - [x] Onchain session PDA creation
-- [x] Onchain receipt with wallet sign
-- [x] Live timeline via SSE
+- [x] Onchain receipt with wallet sign + cost hash
+- [x] Agent Treasury PDA — user funds SOL, agent spends per tool call
+- [x] Live timeline via SSE + Cost Breakdown UI
+- [x] Demo simulation as conversation transcript
 - [x] Clean, product-grade UI
 
 **Nice to have:**
-- [ ] Inbox/Planning agents (Gmail/Calendar)
-- [ ] Agent budgets onchain
+- [ ] Real Inbox/Planning agents (Gmail + Calendar API)
+- [ ] ElevenLabs native subagent workflow (when API stable)
 - [ ] Dark mode
 - [ ] Mobile app
 
@@ -162,5 +217,5 @@ ElevenLabs is NOT a side feature. It is the PRIMARY way to interact with Solli.
 - Clean UI that looks like a real product
 
 **For pitch:**
-- "Every AI interaction deserves proof. Solli makes your research verifiable on Solana."
-- "Voice-first, onchain-native, operator for the AI era."
+- "ChatGPT answers. Solli does. A voice-native process operator that talks you through real work — research, applications, planning — and proves it on Solana."
+- "Voice-first, onchain-native, human-in-the-loop. The AI era needs operators, not chatbots."

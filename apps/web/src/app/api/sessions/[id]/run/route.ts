@@ -33,6 +33,17 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: 'Session has no input' }, { status: 400 });
     }
 
+    // Guard against double execution
+    if (['running', 'completed', 'failed'].includes(session.status)) {
+      return NextResponse.json(
+        { error: `Session is already ${session.status}` },
+        { status: 409 }
+      );
+    }
+
+    // Mark as running immediately to prevent race conditions
+    await updateSession(id, { status: 'running' });
+
     // Run asynchronously so the client can poll / stream
     executeSession(id, session.input).catch((err) => {
       log.error(`Background execution failed for ${id}`, err);

@@ -5,35 +5,35 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --background: 48 33% 97%;
-  --foreground: 0 0% 10%;
+  --background: 0 0% 100%;
+  --foreground: 0 0% 7%;
 
   --card: 0 0% 100%;
-  --card-foreground: 0 0% 10%;
+  --card-foreground: 0 0% 7%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 10%;
+  --popover-foreground: 0 0% 7%;
 
-  --primary: 0 0% 10%;
+  --primary: 0 0% 7%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 48 14% 94%;
-  --secondary-foreground: 0 0% 10%;
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 0 0% 7%;
 
-  --muted: 48 14% 94%;
-  --muted-foreground: 0 0% 42%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%;
 
-  --accent: 183 63% 34%;
+  --accent: 0 0% 7%;
   --accent-foreground: 0 0% 100%;
 
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 45 12% 90%;
-  --input: 45 12% 90%;
-  --ring: 183 63% 34%;
+  --border: 0 0% 90%;
+  --input: 0 0% 90%;
+  --ring: 0 0% 7%;
 
-  --radius: 0.625rem;
+  --radius: 0.5rem;
 }
 
 * {

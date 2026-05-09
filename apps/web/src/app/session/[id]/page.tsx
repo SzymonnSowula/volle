@@ -11,7 +11,7 @@ import { VoiceConversationPanel } from '@/components/session/VoiceConversationPa
 import { WalletConnectButton } from '@/components/wallet/WalletConnectButton';
 import { Loader2, ArrowLeft, Receipt, Zap, Tag, Clock, AlertCircle, Radio } from 'lucide-react';
 import Link from 'next/link';
-import { getSolliProgram, createOnchainReceipt, updateOnchainSessionStatus } from '@/lib/solana/anchor-client';
+import { getSolliProgram, createOnchainReceipt, updateOnchainSessionStatus, recordSessionCost } from '@/lib/solana/anchor-client';
 
 interface SessionData {
   id: string;
@@ -23,6 +23,7 @@ interface SessionData {
   actualCostSol: number;
   createdAt: string;
   updatedAt: string;
+  metadata?: Record<string, unknown>;
 }
 
 interface EventData {
@@ -58,7 +59,11 @@ export default function SessionPage() {
   const [savingReceipt, setSavingReceipt] = useState(false);
   const [receiptHash, setReceiptHash] = useState<string | null>(null);
   const [receiptTx, setReceiptTx] = useState<string | null>(null);
+  const [settleTx, setSettleTx] = useState<string | null>(null);
+  const [settling, setSettling] = useState(false);
   const [sseConnected, setSseConnected] = useState(false);
+  const [clarifyInput, setClarifyInput] = useState('');
+  const [sendingClarification, setSendingClarification] = useState(false);
   const esRef = useRef<EventSource | null>(null);
 
   const load = useCallback(async () => {
@@ -147,6 +152,91 @@ export default function SessionPage() {
     }
   }, [session?.status]);
 
+  const handleSettleAndPay = async () => {
+    if (!connected || !publicKey || !session) {
+      alert('Wallet not connected');
+      return;
+    }
+    setSettling(true);
+    try {
+      // 1. Backend settlement - compute final cost
+      const settleRes = await fetch(`/api/sessions/${id}/settle`, { method: 'POST' });
+      const settleData = await settleRes.json();
+      if (!settleRes.ok) {
+        alert(settleData.error || 'Settlement failed');
+        setSettling(false);
+        return;
+      }
+
+      const actualCostSol = settleData.actualCostSol as number;
+      if (actualCostSol <= 0) {
+        alert('Nothing to settle — session cost is zero');
+        setSettling(false);
+        return;
+      }
+
+      // 2. On-chain payment via record_session_cost
+      const walletAdapter = (wallet as any)?.adapter;
+      if (!walletAdapter) {
+        throw new Error('Wallet adapter not available');
+      }
+      const program = getSolliProgram(connection, walletAdapter);
+      const sessionIdNum = (session.metadata?.onchainSessionId as number)
+        || new Date(session.createdAt).getTime();
+
+      const { tx } = await recordSessionCost(
+        program,
+        publicKey,
+        sessionIdNum,
+        actualCostSol
+      );
+
+      setSettleTx(tx);
+
+      // 3. Update on-chain session status
+      try {
+        await updateOnchainSessionStatus(
+          program,
+          publicKey,
+          sessionIdNum,
+          'completed',
+          actualCostSol
+        );
+      } catch {
+        // non-critical
+      }
+
+      alert(`Settled! Paid ${actualCostSol.toFixed(4)} SOL`);
+    } catch (err) {
+      console.error('[Settle]', err);
+      alert(err instanceof Error ? err.message : 'Settlement failed');
+    } finally {
+      setSettling(false);
+    }
+  };
+
+  const handleSendClarification = async () => {
+    if (!clarifyInput.trim()) return;
+    setSendingClarification(true);
+    try {
+      const res = await fetch(`/api/sessions/${id}/message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: clarifyInput.trim() }),
+      });
+      if (res.ok) {
+        setClarifyInput('');
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'Failed to send message');
+      }
+    } catch {
+      alert('Failed to send message');
+    } finally {
+      setSendingClarification(false);
+    }
+  };
+
   const handleSaveReceipt = async () => {
     if (!connected || !publicKey || !session) {
       alert('Wallet not connected');
@@ -177,8 +267,10 @@ export default function SessionPage() {
         throw new Error('Wallet adapter not available');
       }
       const program = getSolliProgram(connection, walletAdapter);
-      const sessionIdNum = Date.now(); // Use timestamp as session ID
-      
+      // Use stored onchain session ID, fallback to createdAt timestamp for consistency
+      const sessionIdNum = (session.metadata?.onchainSessionId as number)
+        || new Date(session.createdAt).getTime();
+
       const { tx, receiptPDA } = await createOnchainReceipt(
         program,
         publicKey,
@@ -247,6 +339,35 @@ export default function SessionPage() {
           </div>
         )}
 
+        {session?.status === 'clarifying' && (
+          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+              <span className="text-sm font-semibold text-amber-800">Waiting for your answer</span>
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={clarifyInput}
+                onChange={(e) => setClarifyInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSendClarification();
+                }}
+                placeholder="Type your answer..."
+                className="flex-1 rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm text-black outline-none focus:border-amber-500"
+              />
+              <button
+                onClick={handleSendClarification}
+                disabled={sendingClarification || !clarifyInput.trim()}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 transition-colors disabled:opacity-50"
+              >
+                {sendingClarification ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+                Send
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-5">
           {/* Request Card */}
           <div className="rounded-xl border border-cream-300 bg-white overflow-hidden">
@@ -305,18 +426,46 @@ export default function SessionPage() {
                     Connect your wallet to save a receipt on-chain.
                   </div>
                 )}
-                <button
-                  onClick={handleSaveReceipt}
-                  disabled={savingReceipt || !connected}
-                  className="inline-flex items-center gap-2 rounded-lg bg-ink-800 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-ink-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {savingReceipt ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Receipt className="h-4 w-4" />
-                  )}
-                  {savingReceipt ? 'Saving...' : 'Save receipt on-chain'}
-                </button>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={handleSaveReceipt}
+                    disabled={savingReceipt || !connected}
+                    className="inline-flex items-center gap-2 rounded-lg bg-ink-800 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-ink-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {savingReceipt ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Receipt className="h-4 w-4" />
+                    )}
+                    {savingReceipt ? 'Saving...' : 'Save receipt on-chain'}
+                  </button>
+                  <button
+                    onClick={handleSettleAndPay}
+                    disabled={settling || !connected}
+                    className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {settling ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Zap className="h-4 w-4" />
+                    )}
+                    {settling ? 'Settling...' : 'Settle & Pay'}
+                  </button>
+                </div>
+                {settleTx && (
+                  <div className="mt-3 rounded-lg bg-teal-50 border border-teal-200 px-4 py-3 space-y-1.5">
+                    <p className="text-xs text-teal-700 font-medium">Payment settled on-chain!</p>
+                    <a
+                      href={`https://explorer.solana.com/tx/${settleTx}?cluster=devnet`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[10px] font-semibold text-teal-600 hover:text-teal-700 transition-colors"
+                    >
+                      View payment on Solscan
+                      <ArrowLeft className="h-2.5 w-2.5 rotate-180" />
+                    </a>
+                  </div>
+                )}
                 {receiptHash && (
                   <div className="mt-3 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 space-y-1.5">
                     <p className="text-xs text-emerald-700 font-medium">Receipt saved!</p>

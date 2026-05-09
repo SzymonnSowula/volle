@@ -11,6 +11,7 @@ programs_solli = "CnrBFrZP2kwZWYbev3xzTJsDJGK6bTe1HBaNtQ55JSxx"
 [programs.devnet]
 programs_solli = "CnrBFrZP2kwZWYbev3xzTJsDJGK6bTe1HBaNtQ55JSxx"
 
+
 [registry]
 url = "https://api.apr.dev"
 

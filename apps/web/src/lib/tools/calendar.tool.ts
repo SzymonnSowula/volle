@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { logger } from '@/lib/utils/logger';
+
+const log = logger('calendar-tool');
 
 export const CalendarToolInputSchema = z.object({
   action: z.enum(['list', 'create', 'update', 'delete']),
@@ -12,7 +15,50 @@ export const CalendarToolInputSchema = z.object({
 
 export type CalendarToolInput = z.infer<typeof CalendarToolInputSchema>;
 
-export async function calendarTool(_input: CalendarToolInput): Promise<{ success: boolean; message: string }> {
-  // TODO: Implement Calendar integration via worker-google
-  return { success: false, message: 'Calendar tool not yet implemented' };
+export async function calendarTool(
+  input: CalendarToolInput,
+  sessionId?: string
+): Promise<{ success: boolean; message: string; data?: unknown }> {
+  const baseUrl = process.env.WORKER_GOOGLE_URL || 'http://localhost:3003';
+  log.info(`Calendar action: ${input.action}`);
+
+  // Payment enforcement
+  if (sessionId) {
+    const { requireToolPayment } = await import('@/lib/payments/tool-payment');
+    await requireToolPayment(sessionId, 'calendar_list');
+  }
+
+  try {
+    const response = await fetch(`${baseUrl}/calendar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: input.action,
+        eventId: input.eventId,
+        summary: input.summary,
+        description: input.description,
+        startTime: input.startTime,
+        endTime: input.endTime,
+        attendees: input.attendees,
+        requestId: crypto.randomUUID(),
+      }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Google worker error: ${response.status} ${text}`);
+    }
+
+    const result = (await response.json()) as { success: boolean; data?: unknown; error?: string };
+
+    if (result.success) {
+      return { success: true, message: `Calendar ${input.action} completed`, data: result.data };
+    }
+
+    throw new Error(result.error || 'Calendar action failed');
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    log.error('Calendar tool failed', msg);
+    return { success: false, message: msg };
+  }
 }

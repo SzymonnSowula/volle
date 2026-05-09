@@ -27,6 +27,12 @@ export async function browserSearchTool(input: BrowserSearchInput): Promise<Brow
   const baseUrl = process.env.WORKER_BROWSER_URL || 'http://localhost:3002';
   log.info(`Searching: "${input.query}"`);
 
+  // Payment enforcement
+  if (input.sessionId) {
+    const { requireToolPayment } = await import('@/lib/payments/tool-payment');
+    await requireToolPayment(input.sessionId, 'browser_search');
+  }
+
   try {
     const paymentHeaders = input.sessionId ? buildToolPaymentHeaders('browser_search', input.sessionId) : {};
     const response = await fetch(`${baseUrl}/tasks`, {
