@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { logger } from '@/lib/utils/logger';
 import { getGoogleTokensForSession } from '@/lib/google/tokens';
+import { DEMO_MODE, getMockCalendarEvents } from '@/lib/demo-mode';
 
 const log = logger('calendar-tool');
 
@@ -22,6 +23,15 @@ export async function calendarTool(
 ): Promise<{ success: boolean; message: string; data?: unknown }> {
   const baseUrl = process.env.WORKER_GOOGLE_URL || 'http://localhost:3003';
   log.info(`Calendar action: ${input.action}`);
+
+  // Demo mode — return mock events without hitting worker or requiring auth
+  if (DEMO_MODE) {
+    log.info('Demo mode: returning mock calendar events');
+    if (input.action === 'list') {
+      return { success: true, message: 'Demo calendar events (prototype mode)', data: getMockCalendarEvents() };
+    }
+    return { success: true, message: `[Demo] Calendar ${input.action} simulated successfully. Workers not configured in this prototype.` };
+  }
 
   // Payment enforcement
   if (sessionId) {

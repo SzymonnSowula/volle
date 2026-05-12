@@ -1,5 +1,6 @@
 import { logger } from '@/lib/utils/logger';
 import { buildToolPaymentHeaders } from '@/lib/x402';
+import { DEMO_MODE, getMockSearchResults } from '@/lib/demo-mode';
 
 const log = logger('browser-search-tool');
 
@@ -26,6 +27,12 @@ export interface BrowserSearchOutput {
 export async function browserSearchTool(input: BrowserSearchInput): Promise<BrowserSearchOutput> {
   const baseUrl = process.env.WORKER_BROWSER_URL || 'http://localhost:3002';
   log.info(`Searching: "${input.query}"`);
+
+  // Demo mode — skip worker and return mock data
+  if (DEMO_MODE) {
+    log.info('Demo mode: returning mock search results');
+    return { results: getMockSearchResults(input.query), query: input.query };
+  }
 
   // Payment enforcement
   if (input.sessionId) {
