@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletConnectButton } from '@/components/wallet/WalletConnectButton';
@@ -259,28 +260,28 @@ export default function LandingPage() {
               <div>
                 <h4 className="font-bold text-xs text-white uppercase tracking-wider mb-6">Explore</h4>
                 <ul className="space-y-4 text-xs font-bold text-neutral-500 uppercase tracking-wide">
-                  <li><a href="#" className="hover:text-white transition-colors">Agents</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Integrations</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Workflows</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Treasury</a></li>
+                  <li><Link href="/explore/agents" className="hover:text-white transition-colors">Agents</Link></li>
+                  <li><Link href="/explore/integrations" className="hover:text-white transition-colors">Integrations</Link></li>
+                  <li><Link href="/explore/workflows" className="hover:text-white transition-colors">Workflows</Link></li>
+                  <li><Link href="/explore/treasury" className="hover:text-white transition-colors">Treasury</Link></li>
                 </ul>
               </div>
               <div>
                 <h4 className="font-bold text-xs text-white uppercase tracking-wider mb-6">Learn</h4>
                 <ul className="space-y-4 text-xs font-bold text-neutral-500 uppercase tracking-wide">
-                  <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Architecture</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Solana Setup</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Voice Commands</a></li>
+                  <li><Link href="/learn/documentation" className="hover:text-white transition-colors">Documentation</Link></li>
+                  <li><Link href="/learn/architecture" className="hover:text-white transition-colors">Architecture</Link></li>
+                  <li><Link href="/learn/solana-setup" className="hover:text-white transition-colors">Solana Setup</Link></li>
+                  <li><Link href="/learn/voice-commands" className="hover:text-white transition-colors">Voice Commands</Link></li>
                 </ul>
               </div>
               <div>
                 <h4 className="font-bold text-xs text-white uppercase tracking-wider mb-6">More</h4>
                 <ul className="space-y-4 text-xs font-bold text-neutral-500 uppercase tracking-wide">
-                  <li><a href="#" className="hover:text-white transition-colors">GitHub</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Twitter</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Colosseum</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                  <li><a href="https://github.com/SzymonnSowula" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a></li>
+                  <li><a href="https://x.com/sNotSune" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Twitter (X)</a></li>
+                  <li><a href="https://arena.colosseum.org/projects/explore/volle" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Colosseum</a></li>
+                  <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
                 </ul>
               </div>
             </div>
